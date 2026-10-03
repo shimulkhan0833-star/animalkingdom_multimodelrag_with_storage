@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fieldnotes — Animal Kingdom</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <nav><a class="brand" href="/">✳ fieldnotes<span>THE LIVING LIBRARY</span></a><span class="edition">Volume 01 · Animal Kingdom</span><button class="nav-chat" data-open>Ask the library ↗</button></nav>
+  <main>
+    <section class="hero">
+      <div class="hero-copy"><div class="eyebrow"><span></span> YOUR DOCUMENT, BROUGHT TO LIFE</div><h1>A little curiosity.<br>A whole <em>kingdom.</em></h1><p>Explore the animal world through your PDF. Find an explanation, inspect a source, or discover the image you’re looking for.</p><button class="primary" data-open>Start exploring <span>↗</span></button><div class="document"><div class="file-icon">PDF</div><div><strong id="document-name">Animal Kingdom</strong><small id="document-meta">Your connected document library</small></div><span class="connected">● Connected</span></div></div>
+      <div class="art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="art-label">FIG. 01 / A WORLD OF CONNECTIONS</div><div class="creature">🐸</div><div class="specimen">Rana<span>CLASS AMPHIBIA</span></div><span class="art-mark">✳</span></div>
+    </section>
+    <section class="explore"><div class="section-heading"><h2>Follow your curiosity</h2><span>THREE WAYS IN</span></div><div class="cards">
+      <button class="card" data-question="What are amphibians?"><span class="card-number">01 / UNDERSTAND</span><h3>Make sense of<br>the science.</h3><p>Ask a question and explore an answer grounded in your document.</p><span class="card-link">What are amphibians? ↗</span></button>
+      <button class="card" data-question="Give me a frog image" data-type="image"><span class="card-number">02 / DISCOVER</span><h3>Find a face in<br>the animal world.</h3><p>Search the illustrations and see images from the original pages.</p><span class="card-link">Show me a frog ↗</span></button>
+      <button class="card" data-question="According to Table 4.2, what is the level of organisation in Porifera?" data-type="table"><span class="card-number">03 / COMPARE</span><h3>Look closer at<br>the details.</h3><p>Explore the tables and trace each answer back to its source.</p><span class="card-link">Explore a table ↗</span></button>
+    </div></section>
+    <footer><span>Built for curious minds.</span><span>Answers with sources. Images with context.</span></footer>
+  </main>
+  <button id="chat-launcher" aria-label="Open document chat" aria-expanded="false" aria-controls="chat-panel"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 11.5a8 8 0 0 1-8 8H4l-2 2V11.5a9 9 0 0 1 18 0Z"/><path d="M7 11h.01M11 11h.01M15 11h.01" stroke-width="3" stroke-linecap="round"/></svg><span>Ask Fieldnotes</span></button>
+  <section id="chat-panel" hidden aria-label="Document assistant">
+    <header class="chat-header"><div class="assistant-icon">✳</div><div><strong>Ask Fieldnotes</strong><small>Your Animal Kingdom companion</small></div><button id="close-chat" aria-label="Close chat">×</button></header>
+    <div id="messages" role="log" aria-live="polite"><div class="welcome"><span>LET’S EXPLORE</span><h2>What are you<br>curious about?</h2><p>Ask about the PDF, request an illustration, or explore a table.</p><button data-question="What are amphibians?">What are amphibians? ↗</button><button data-question="Give me a frog image" data-type="image">Find a frog image ↗</button></div></div>
+    <form id="chat-form"><div class="mode-row"><label for="search-type">Look in</label><select id="search-type"><option value="">All content</option><option value="text">Text</option><option value="image">Images</option><option value="table">Tables</option></select><button type="button" id="clear-chat">Clear chat</button></div><div class="input-row"><textarea id="question" rows="1" maxlength="2000" placeholder="Ask about your document…" aria-label="Your question" required></textarea><button id="send" type="submit" aria-label="Send question">↑</button></div><small class="chat-note">This conversation remembers earlier messages. Check sources for important details.</small></form>
+  </section>
+  <script src="/static/app.js"></script>
+</body>
+</html>

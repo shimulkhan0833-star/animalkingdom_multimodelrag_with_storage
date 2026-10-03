@@ -1,0 +1,9 @@
+{
+  "description": "Draft starter cases. Review PDF pages/images and mark reviewed=true before official evaluation. Expand to 15-20 cases.",
+  "cases": [
+    {"id": "frog_image", "question": "Give me a frog image", "reviewed": false, "answerable": true, "content_type": "image", "expected_pages": [12], "expected_record_ids": [], "expected_image_paths": ["images/page_0012_image_0004.png", "images/page_0012_image_0006.png"], "answer_contains_all": ["frog"]},
+    {"id": "amphibians", "question": "What are amphibians?", "reviewed": false, "answerable": true, "content_type": null, "expected_pages": [12], "answer_contains_all": ["amphib"]},
+    {"id": "porifera_table", "question": "According to Table 4.2, what is the level of organisation in Porifera?", "reviewed": false, "answerable": true, "content_type": "table", "expected_pages": [15], "answer_contains_all": ["cellular"]},
+    {"id": "unsupported", "question": "What is the current weather in Dhaka?", "reviewed": false, "answerable": false, "content_type": null, "expected_pages": [], "answer_contains_all": []}
+  ]
+}

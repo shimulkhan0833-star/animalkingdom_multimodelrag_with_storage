@@ -1,0 +1,97 @@
+Your project has two workflows: **preparing the PDF once** and **answering questions whenever a user chats**.
+
+### 1. PDF preparation
+
+```text
+animal_kingdom.pdf
+    ↓ extract_pdf.py
+Text + image crops + tables + page screenshots + manifest.json
+    ↓ prepare_documents.py
+prepared_documents.jsonl
+    ↓ generate_captions.py → Groq vision
+captions.json
+    ↓ prepare_documents.py --captions ...
+prepared_documents_captioned.jsonl
+    ↓ embed_documents.py → Gemini Embedding 2
+1536-dimensional vectors
+    ↓
+Pinecone
+```
+
+| File | What it does |
+|---|---|
+| `extract_pdf.py` | Uses PyMuPDF to extract text, image regions, tables, and page screenshots. |
+| `manifest.json` | Links extracted items to their PDF pages, coordinates, and files. |
+| `prepare_documents.py` | Groups text into chunks and prepares image/table embedding inputs. |
+| `generate_captions.py` | Uses Groq to describe saved images and writes `captions.json`. |
+| `prepared_documents_captioned.jsonl` | Contains text chunks, image-caption pairs, and table screenshot/header pairs. |
+| `embed_documents.py` | Embeds each record using Gemini Embedding 2 and uploads it to Pinecone. |
+| `embedding_checkpoint.json` | Caches vectors and tracks successful uploads for resumable processing. |
+
+Your current PDF produced **87 embedded records**: 18 text chunks, 63 image-caption pairs, and 6 tables.
+
+**Pinecone stores vectors and metadata.** Original images, tables, text, and screenshots remain in local storage.
+
+### 2. Chat and answering
+
+```text
+User types in the floating chat
+    ↓ frontend/app.js
+POST /api/chat
+    ↓ app.py
+answer_question.py
+    ↓ retrieve_documents.py
+Question → Gemini Embedding 2 → Pinecone search
+    ↓
+Matching IDs → original local records and evidence
+    ↓ answer_question.py
+System prompt + question + retrieved text/tables/images
+    ↓ Groq vision
+Answer + source labels + selected image labels
+    ↓
+Validate labels and convert evidence paths into API URLs
+    ↓
+Frontend displays answer, citations, and images
+```
+
+For **“Give me a frog image”**, select **Images** in the chat:
+
+1. Gemini embeds the question.
+2. Pinecone searches image records.
+3. The script loads matching captions and actual images.
+4. Groq inspects the attached images and selects relevant evidence.
+5. FastAPI returns the answer and image URL.
+6. The browser displays the saved frog image.
+
+For a general question, the pipeline retrieves relevant evidence and asks Groq to answer from it, with page citations.
+
+### 3. Frontend and API
+
+| Component | Role |
+|---|---|
+| `frontend/index.html` | Demo page and floating chat panel |
+| `frontend/styles.css` | Layout, styling, and mobile responsiveness |
+| `frontend/app.js` | Sends questions and renders answers, citations, and images |
+| `app.py` | Serves the frontend and connects chat requests to the RAG pipeline |
+| `GET /api/document` | Returns document information |
+| `POST /api/chat` | Processes a question |
+| `GET /api/media/{record_id}/{kind}` | Serves a listed image or page screenshot |
+
+The answering instructions are in **`SYSTEM` inside `answer_question.py`**. They tell Groq to use supplied evidence, check visual claims, cite sources, and acknowledge insufficient evidence.
+
+### 4. Supporting files
+
+- **`.env`** holds Google, Groq, and Pinecone API keys on the backend.
+- **`requirements.txt`** lists Python dependencies.
+- **`test_*.py`** checks individual pipeline behaviors without processing your real PDF.
+- **`evaluate_rag.py`** evaluates question sets; you chose to skip this stage for now.
+
+Start the application with:
+
+```powershell
+python -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+Then open **http://127.0.0.1:8000**.
+
+Currently, each question is searched independently. The chat displays previous messages, but it does **not** send conversation history to the answering model.
