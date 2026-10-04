@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from embed_documents import process_records, checked_vector
+from ingestion.embed_documents import process_records, checked_vector
 
 
 class EmbeddingTests(unittest.TestCase):

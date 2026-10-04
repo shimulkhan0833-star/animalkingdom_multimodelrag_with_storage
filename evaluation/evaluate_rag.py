@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-from generate_captions import safe_error
+from ingestion.generate_captions import safe_error
 
 
 def load_cases(path, allow_unreviewed=False):
@@ -132,7 +132,7 @@ def main():
                 if not args.cached:
                     if index > 1:
                         time.sleep(args.interval)
-                    command = [sys.executable, str(Path(__file__).with_name("retrieve_documents.py")),
+                    command = [sys.executable, "-m", "rag.retrieve_documents",
                                case["question"], "--top-k", str(args.top_k), "--output", str(retrieval_path)]
                     if case.get("content_type"):
                         command.extend(["--type", case["content_type"]])
@@ -141,7 +141,7 @@ def main():
                             command.extend(["--" + option.replace("_", "-"), str(getattr(args, option))])
                     run_command(command, args.timeout)
                     if not args.retrieval_only:
-                        run_command([sys.executable, str(Path(__file__).with_name("answer_question.py")),
+                        run_command([sys.executable, "-m", "rag.answer_question",
                                      case["question"], "--retrieved", str(retrieval_path), "--output", str(answer_path)], args.timeout)
                 retrieved = json.loads(retrieval_path.read_text(encoding="utf-8"))
                 answer = None if args.retrieval_only else json.loads(answer_path.read_text(encoding="utf-8"))

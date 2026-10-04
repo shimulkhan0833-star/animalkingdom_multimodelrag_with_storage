@@ -15,11 +15,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
-from database import get_db
-from models import Conversation, Message, MessageSource, utc_now
-from conversation_memory import select_history
+from db.database import get_db
+from db.models import Conversation, Message, MessageSource, utc_now
+from rag.conversation_memory import select_history
 
-from prepare_documents import evidence_path
+from ingestion.prepare_documents import evidence_path
 
 ROOT = Path(__file__).resolve().parent
 app = FastAPI(title="Animal Kingdom PDF Chat", version="0.1.0")
@@ -113,7 +113,7 @@ def answer(question, content_type, prepared, history=None):
     """Keep the existing CLI usable; run it with an isolated output per request."""
     with tempfile.TemporaryDirectory() as directory:
         output = Path(directory) / "answer.json"
-        command = [sys.executable, str(ROOT / "answer_question.py"), question,
+        command = [sys.executable, "-m", "rag.answer_question", question,
                    "--prepared", str(prepared), "--output", str(output), "--top-k", "3"]
         if content_type:
             command.extend(["--type", content_type])

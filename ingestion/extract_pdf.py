@@ -139,10 +139,10 @@ def extract_pdf(source, output_root, dpi=150, ocr=False, language="eng", table_s
 def main():
     """Parse CLI options, validate input, and report extraction results."""
     parser = argparse.ArgumentParser(description=__doc__)
-    # With no filename, load the sample PDF located next to this script.
+    # With no filename, load the sample PDF located in the project root.
     parser.add_argument("pdf", type=Path, nargs="?",
-                        default=Path(__file__).resolve().parent / "animal_kingdom.pdf",
-                        help="PDF to extract (default: animal_kingdom.pdf next to this script)")
+                        default=Path(__file__).resolve().parents[1] / "animal_kingdom.pdf",
+                        help="PDF to extract (default: animal_kingdom.pdf in the project root)")
     parser.add_argument("--output", type=Path, default=Path("storage"))
     parser.add_argument("--dpi", type=int, default=150)
     parser.add_argument("--ocr", action="store_true", help="OCR pages without native text; requires Tesseract")

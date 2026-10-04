@@ -4,9 +4,9 @@ import json
 import os
 from pathlib import Path
 
-from embed_documents import checked_vector, retry
-from generate_captions import safe_error
-from prepare_documents import evidence_path
+from ingestion.embed_documents import checked_vector, retry
+from ingestion.generate_captions import safe_error
+from ingestion.prepare_documents import evidence_path
 
 
 def build_filter(document_id, content_type=None):
@@ -63,7 +63,7 @@ def main():
         if args.output and args.output.exists():
             raise ValueError("Output file already exists; choose a new path")
         if args.prepared is None:
-            matches = list((Path(__file__).resolve().parent / "storage").glob("*/prepared_documents_captioned.jsonl"))
+            matches = list((Path(__file__).resolve().parents[1] / "storage").glob("*/prepared_documents_captioned.jsonl"))
             if len(matches) != 1:
                 raise ValueError("Specify --prepared when zero or multiple files exist")
             args.prepared = matches[0]
@@ -91,7 +91,7 @@ def main():
         from dotenv import load_dotenv
         from google import genai
         from google.genai import types
-        load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+        load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
         google_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
         pinecone_key = os.getenv("PINECONE_API_KEY")
         if not google_key or not pinecone_key:

@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-from answer_question import build_messages, validate_answer
+from rag.answer_question import build_messages, validate_answer
 
 
 class AnswerTests(unittest.TestCase):

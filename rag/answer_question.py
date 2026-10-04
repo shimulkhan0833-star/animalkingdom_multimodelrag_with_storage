@@ -8,9 +8,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-from embed_documents import retry
-from generate_captions import safe_error
-from conversation_memory import is_identity_question
+from ingestion.embed_documents import retry
+from ingestion.generate_captions import safe_error
+from rag.conversation_memory import is_identity_question
 
 
 SYSTEM = """Answer using supplied PDF evidence and the user's conversation history.
@@ -115,7 +115,7 @@ def main():
         if args.output and args.output.exists():
             raise ValueError("Output already exists; choose a new path")
         # Reuse the retrieval CLI with the same interpreter, without shell quoting.
-        command = [sys.executable, str(Path(__file__).with_name("retrieve_documents.py")),
+        command = [sys.executable, "-m", "rag.retrieve_documents",
                    args.question, "--top-k", str(args.top_k)]
         for option in ("type", "prepared", "evidence_root", "checkpoint", "min_score"):
             value = getattr(args, option)
@@ -129,7 +129,7 @@ def main():
             return
         from dotenv import load_dotenv
         from groq import Groq
-        load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+        load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
         key = os.getenv("GROQ_API_KEY")
         if not key:
             raise ValueError("Set GROQ_API_KEY in .env")

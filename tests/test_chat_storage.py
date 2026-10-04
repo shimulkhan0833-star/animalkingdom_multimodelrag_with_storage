@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 import app
-from database import get_db
-from models import Base, Message, MessageSource
+from db.database import get_db
+from db.models import Base, Message, MessageSource
 
 
 class ChatStorageTests(unittest.TestCase):

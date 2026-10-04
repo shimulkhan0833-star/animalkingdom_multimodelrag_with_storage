@@ -132,7 +132,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.manifest is None:
-            matches = list((Path(__file__).resolve().parent / "storage").glob("*/manifest.json"))
+            matches = list((Path(__file__).resolve().parents[1] / "storage").glob("*/manifest.json"))
             if len(matches) != 1:
                 raise ValueError("Specify a manifest path when storage contains zero or multiple manifests")
             args.manifest = matches[0]

@@ -4,15 +4,15 @@ Your project has two workflows: **preparing the PDF once** and **answering quest
 
 ```text
 animal_kingdom.pdf
-    ↓ extract_pdf.py
+    ↓ ingestion/extract_pdf.py
 Text + image crops + tables + page screenshots + manifest.json
-    ↓ prepare_documents.py
+    ↓ ingestion/prepare_documents.py
 prepared_documents.jsonl
-    ↓ generate_captions.py → Groq vision
+    ↓ ingestion/generate_captions.py → Groq vision
 captions.json
-    ↓ prepare_documents.py --captions ...
+    ↓ ingestion/prepare_documents.py --captions ...
 prepared_documents_captioned.jsonl
-    ↓ embed_documents.py → Gemini Embedding 2
+    ↓ ingestion/embed_documents.py → Gemini Embedding 2
 1536-dimensional vectors
     ↓
 Pinecone
@@ -20,12 +20,12 @@ Pinecone
 
 | File | What it does |
 |---|---|
-| `extract_pdf.py` | Uses PyMuPDF to extract text, image regions, tables, and page screenshots. |
+| `ingestion/extract_pdf.py` | Uses PyMuPDF to extract text, image regions, tables, and page screenshots. |
 | `manifest.json` | Links extracted items to their PDF pages, coordinates, and files. |
-| `prepare_documents.py` | Groups text into chunks and prepares image/table embedding inputs. |
-| `generate_captions.py` | Uses Groq to describe saved images and writes `captions.json`. |
+| `ingestion/prepare_documents.py` | Groups text into chunks and prepares image/table embedding inputs. |
+| `ingestion/generate_captions.py` | Uses Groq to describe saved images and writes `captions.json`. |
 | `prepared_documents_captioned.jsonl` | Contains text chunks, image-caption pairs, and table screenshot/header pairs. |
-| `embed_documents.py` | Embeds each record using Gemini Embedding 2 and uploads it to Pinecone. |
+| `ingestion/embed_documents.py` | Embeds each record using Gemini Embedding 2 and uploads it to Pinecone. |
 | `embedding_checkpoint.json` | Caches vectors and tracks successful uploads for resumable processing. |
 
 Your current PDF produced **87 embedded records**: 18 text chunks, 63 image-caption pairs, and 6 tables.
@@ -39,12 +39,12 @@ User types in the floating chat
     ↓ frontend/app.js
 POST /api/chat
     ↓ app.py
-answer_question.py
-    ↓ retrieve_documents.py
+rag/answer_question.py
+    ↓ rag/retrieve_documents.py
 Question → Gemini Embedding 2 → Pinecone search
     ↓
 Matching IDs → original local records and evidence
-    ↓ answer_question.py
+    ↓ rag/answer_question.py
 System prompt + question + retrieved text/tables/images
     ↓ Groq vision
 Answer + source labels + selected image labels
@@ -77,14 +77,14 @@ For a general question, the pipeline retrieves relevant evidence and asks Groq t
 | `POST /api/chat` | Processes a question |
 | `GET /api/media/{record_id}/{kind}` | Serves a listed image or page screenshot |
 
-The answering instructions are in **`SYSTEM` inside `answer_question.py`**. They tell Groq to use supplied evidence, check visual claims, cite sources, and acknowledge insufficient evidence.
+The answering instructions are in **`SYSTEM` inside `rag/answer_question.py`**. They tell Groq to use supplied evidence, check visual claims, cite sources, and acknowledge insufficient evidence.
 
 ### 4. Supporting files
 
 - **`.env`** holds Google, Groq, and Pinecone API keys on the backend.
 - **`requirements.txt`** lists Python dependencies.
-- **`test_*.py`** checks individual pipeline behaviors without processing your real PDF.
-- **`evaluate_rag.py`** evaluates question sets; you chose to skip this stage for now.
+- **`tests/test_*.py`** checks individual pipeline behaviors without processing your real PDF.
+- **`evaluation/evaluate_rag.py`** evaluates question sets; you chose to skip this stage for now.
 
 Start the application with:
 
@@ -95,3 +95,64 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000
 Then open **http://127.0.0.1:8000**.
 
 Currently, each question is searched independently. The chat displays previous messages, but it does **not** send conversation history to the answering model.
+
+
+
+*****************************************************************************************
+### How MySQL storage works
+
+The application uses **SQLAlchemy** to connect FastAPI to MySQL. Connection settings are read from `.env`.
+
+Run this command to initialize storage:
+
+```bash
+python -m db.init_database
+```
+
+It creates the configured database if it does not exist, then creates these three tables:
+
+| Table | What it stores |
+|---|---|
+| `conversations` | Conversation ID, title, creation time, and last updated time. |
+| `messages` | User questions and assistant replies, their conversation ID, role, status, and creation time. |
+| `message_sources` | PDF references used in each assistant answer, including record ID, citation label, document, page number, content type, and whether an image was displayed. |
+
+One conversation has many messages. Each assistant message can have several source references.
+
+### What happens when you send a message
+
+1. FastAPI finds the existing conversation or creates one.
+2. It loads relevant completed messages from that conversation for context.
+3. It saves your question and creates an assistant message with `pending` status.
+4. The RAG pipeline retrieves PDF evidence from Pinecone when needed and generates an answer.
+5. FastAPI updates the assistant message with the answer and marks it `completed`.
+6. It saves the answer’s citation references in `message_sources`.
+
+If answer generation fails, the assistant message is marked `failed`. Your question remains stored.
+
+### How chat memory works
+
+Saving messages alone does not give the model memory. Before answering, the application selects recent messages and relevant older user statements from MySQL and includes them in the model’s context.
+
+For example:
+
+```text
+Day 1, same conversation:
+User: My name is Alex.
+
+Day 4, same conversation:
+User: What is my name?
+Assistant: Your name is Alex.
+```
+
+The frontend retains the active conversation ID in browser storage so it can reload that conversation’s saved history.
+
+**Memory belongs to the conversation.** Starting a new conversation creates separate history. The application selects a limited amount of history per request, so it does not send every stored message to the model.
+
+### Where each kind of data lives
+
+- **MySQL:** conversations, messages, and answer source references.
+- **Pinecone:** document embeddings and retrieval metadata.
+- **File storage:** original PDF, extracted images, text, tables, and generated JSON files.
+
+MySQL source references connect saved answers to the PDF records; they do not contain copies of the images or embedding vectors.

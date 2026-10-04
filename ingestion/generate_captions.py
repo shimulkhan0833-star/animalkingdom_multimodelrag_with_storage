@@ -7,7 +7,7 @@ import re
 import time
 from pathlib import Path
 
-from prepare_documents import evidence_path
+from ingestion.prepare_documents import evidence_path
 
 
 PROMPT = """Describe this PDF image for semantic retrieval in 1-3 sentences.
@@ -140,7 +140,7 @@ def main():
         if args.interval < 0:
             raise ValueError("--interval must be nonnegative")
         if args.prepared is None:
-            matches = list((Path(__file__).resolve().parent / "storage").glob("*/prepared_documents.jsonl"))
+            matches = list((Path(__file__).resolve().parents[1] / "storage").glob("*/prepared_documents.jsonl"))
             if len(matches) != 1:
                 raise ValueError("Specify prepared_documents.jsonl when zero or multiple files exist")
             args.prepared = matches[0]
@@ -157,7 +157,7 @@ def main():
         # Load dependencies and secrets only for an actual captioning run.
         from dotenv import load_dotenv
         from groq import Groq
-        load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+        load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
         key = os.getenv("GROQ_API_KEY")
         if not key:
             raise ValueError("Set GROQ_API_KEY in .env or your environment")

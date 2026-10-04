@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 def database_settings():
-    load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+    load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
     name = os.getenv("MYSQL_DATABASE", "rag_chat")
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,63}", name):
         raise ValueError("MYSQL_DATABASE must be a simple alphanumeric/underscore name")

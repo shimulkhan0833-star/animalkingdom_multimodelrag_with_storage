@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pymupdf
 
-from extract_pdf import extract_pdf
+from ingestion.extract_pdf import extract_pdf
 
 
 class ExtractionTest(unittest.TestCase):

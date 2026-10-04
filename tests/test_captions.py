@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 import httpx
 
-from generate_captions import generate_captions
+from ingestion.generate_captions import generate_captions
 
 
 class QuotaError(Exception):
@@ -22,7 +22,7 @@ class CaptionTests(unittest.TestCase):
                 raise httpx.ConnectError("getaddrinfo failed")
             return "A frog"
 
-        with tempfile.TemporaryDirectory() as directory, patch("generate_captions.time.sleep"):
+        with tempfile.TemporaryDirectory() as directory, patch("ingestion.generate_captions.time.sleep"):
             root = Path(directory)
             result = generate_captions([{"record_id": "frog", "image_path": "frog.png"}],
                                        root, root / "captions.json", captioner, interval=0)
@@ -45,8 +45,8 @@ class CaptionTests(unittest.TestCase):
         records = [{"record_id": str(i), "image_path": "frog.png"} for i in range(2)]
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            with patch("generate_captions.time.sleep", side_effect=sleep), patch(
-                    "generate_captions.time.monotonic", side_effect=lambda: clock[0]):
+            with patch("ingestion.generate_captions.time.sleep", side_effect=sleep), patch(
+                    "ingestion.generate_captions.time.monotonic", side_effect=lambda: clock[0]):
                 result = generate_captions(records, root, root / "captions.json", captioner)
                 self.assertEqual(len(result), 2)
                 self.assertGreaterEqual(requests[1] - requests[0], 37.78)

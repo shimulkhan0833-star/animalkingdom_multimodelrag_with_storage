@@ -1,6 +1,6 @@
 """Check evaluation metrics without model calls."""
 import unittest
-from evaluate_rag import score_case, summarize
+from evaluation.evaluate_rag import score_case, summarize
 
 
 class EvaluationTests(unittest.TestCase):

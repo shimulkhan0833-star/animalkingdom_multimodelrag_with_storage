@@ -1,7 +1,7 @@
 import unittest
 
-from conversation_memory import select_history, is_identity_question
-from answer_question import build_messages
+from rag.conversation_memory import select_history, is_identity_question
+from rag.answer_question import build_messages
 
 
 class MemoryTests(unittest.TestCase):

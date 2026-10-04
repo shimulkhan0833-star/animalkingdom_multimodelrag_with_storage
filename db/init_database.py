@@ -1,8 +1,8 @@
 """Create the local MySQL database, then create the three SQLAlchemy tables."""
 from sqlalchemy import inspect, text
 
-from database import database_settings, get_engine, make_engine
-from models import Base
+from db.database import database_settings, get_engine, make_engine
+from db.models import Base
 
 
 def initialize():
